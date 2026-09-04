@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard - Sewa PS</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>🎮 Sewa PS</h1>
+    <div>
+      <span id="infoUser" style="margin-right:12px; color:#94a3b8; font-size:14px;"></span>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="consoles.html" class="admin-only">Kelola Unit</a>
+      <a href="rentals.html">Riwayat Sewa</a>
+      <a href="users.html" class="superadmin-only">Kelola User</a>
+      <button onclick="logout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>Buat Transaksi Sewa Baru</h2>
+      <form id="formSewa">
+        <label>Pilih Unit Konsol (yang tersedia)</label>
+        <select id="consoleId" required></select>
+
+        <label>Nama Penyewa (kosongkan untuk pakai username Anda)</label>
+        <input type="text" id="namaPenyewa">
+
+        <label>No. HP (opsional)</label>
+        <input type="text" id="noHp">
+
+        <label>Durasi (jam)</label>
+        <input type="number" id="durasiJam" min="1" value="1" required>
+
+        <button type="submit" class="btn-primary">Mulai Sewa</button>
+        <p class="error-msg" id="errorMsg"></p>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Status Unit Konsol</h2>
+      <div class="grid-cards" id="listConsole"></div>
+    </div>
+  </div>
+
+  <!-- Modal Pembayaran QRIS (statis) -->
+  <div id="modalQris" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:999;">
+    <div class="card" style="max-width:340px; text-align:center;">
+      <h2>Scan untuk Bayar</h2>
+      <p id="qrisTotal" style="color:#94a3b8; margin-bottom:12px;"></p>
+      <img src="img/qris.jpg" alt="QRIS" style="width:100%; border-radius:8px; background:#fff; padding:8px;">
+      <p id="qrisStatus" style="margin-top:14px; font-weight:bold;">Silakan scan & transfer sesuai total di atas.</p>
+      <button type="button" class="btn-primary" style="margin-top:10px;" onclick="tandaiSudahBayar()">Saya Sudah Bayar</button>
+      <button type="button" class="btn-small" style="margin-top:8px;" onclick="tutupModalQris()">Tutup</button>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

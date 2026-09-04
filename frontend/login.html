@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Login - Sewa PS</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card login-box">
+      <h2>🎮 Login</h2>
+      <form id="formLogin">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="admin" required>
+
+        <label>Password</label>
+        <input type="password" id="password" placeholder="admin123" required>
+
+        <button type="submit" class="btn-primary">Masuk</button>
+        <p class="error-msg" id="errorMsg"></p>
+      </form>
+      <p style="margin-top:14px; font-size:14px; color:#94a3b8;">
+        Belum punya akun? <a href="register.html" style="color:#38bdf8;">Daftar di sini</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

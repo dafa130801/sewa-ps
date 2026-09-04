@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Sewa PS</title>
+  <script>
+    // Alihkan otomatis: kalau sudah login ke dashboard, kalau belum ke login
+    if (sessionStorage.getItem('token')) {
+      window.location.href = 'dashboard.html';
+    } else {
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body></body>
+</html>

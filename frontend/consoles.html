@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Kelola Unit - Sewa PS</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>🎮 Kelola Unit Konsol</h1>
+    <div>
+      <span id="infoUser" style="margin-right:12px; color:#94a3b8; font-size:14px;"></span>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="consoles.html" class="admin-only">Kelola Unit</a>
+      <a href="rentals.html">Riwayat Sewa</a>
+      <a href="users.html" class="superadmin-only">Kelola User</a>
+      <button onclick="logout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>Tambah Unit Baru</h2>
+      <form id="formConsole">
+        <label>Nama Unit</label>
+        <input type="text" id="nama" placeholder="Contoh: PS4 Bilik 3" required>
+
+        <label>Tipe</label>
+        <select id="tipe">
+          <option value="PS3">PS3</option>
+          <option value="PS4" selected>PS4</option>
+          <option value="PS5">PS5</option>
+        </select>
+
+        <label>Harga per Jam (Rp)</label>
+        <input type="number" id="harga" min="0" required>
+
+        <button type="submit" class="btn-primary">Tambah Unit</button>
+        <p class="error-msg" id="errorMsg"></p>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Daftar Unit</h2>
+      <table>
+        <thead>
+          <tr><th>Nama</th><th>Tipe</th><th>Harga/Jam</th><th>Status</th><th>Aksi</th></tr>
+        </thead>
+        <tbody id="tabelConsole"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/consoles.js"></script>
+</body>
+</html>

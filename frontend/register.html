@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Daftar Akun - Sewa PS</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card login-box">
+      <h2>🎮 Daftar Akun Baru</h2>
+      <form id="formRegister">
+        <label>Username</label>
+        <input type="text" id="username" required>
+
+        <label>Password (minimal 6 karakter)</label>
+        <input type="password" id="password" required minlength="6">
+
+        <button type="submit" class="btn-primary">Daftar</button>
+        <p class="error-msg" id="errorMsg"></p>
+        <p class="error-msg" id="successMsg" style="color:#4ade80;"></p>
+      </form>
+      <p style="margin-top:14px; font-size:14px; color:#94a3b8;">
+        Sudah punya akun? <a href="login.html" style="color:#38bdf8;">Login di sini</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/register.js"></script>
+</body>
+</html>
