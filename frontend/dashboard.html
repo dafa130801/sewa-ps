@@ -4,8 +4,19 @@
 <meta charset="UTF-8">
 <title>Dashboard - Sewa PS</title>
 <link rel="stylesheet" href="css/style.css">
+<style>
+  body.dashboard-page {
+    background-image: url('img/console-hero.svg');
+    background-repeat: no-repeat;
+    background-position: right 20px top 40px;
+    background-size: 300px auto;
+  }
+  @media (max-width: 900px) {
+    body.dashboard-page { background-image: none; }
+  }
+</style>
 </head>
-<body>
+<body class="dashboard-page">
   <div class="navbar">
     <h1>🎮 Sewa PS</h1>
     <div>
@@ -24,12 +35,16 @@
       <form id="formSewa">
         <label>Pilih Unit Konsol (yang tersedia)</label>
         <select id="consoleId" required></select>
+        <div id="jadwalUnit" style="margin-top:8px; font-size:13px; color:#a999c9;"></div>
 
         <label>Nama Penyewa (kosongkan untuk pakai username Anda)</label>
         <input type="text" id="namaPenyewa">
 
         <label>No. HP (opsional)</label>
         <input type="text" id="noHp">
+
+        <label>Jam Mulai</label>
+        <input type="datetime-local" id="jamMulai" required>
 
         <label>Durasi (jam)</label>
         <input type="number" id="durasiJam" min="1" value="1" required>

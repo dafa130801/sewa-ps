@@ -10,9 +10,12 @@ async function muatDaftarConsole() {
 
   const select = document.getElementById('consoleId');
   select.innerHTML = data
-    .filter(c => c.status === 'tersedia')
+    .filter(c => c.status !== 'maintenance')
     .map(c => `<option value="${c.id}">${c.nama} (${c.tipe}) - Rp${c.harga_per_jam}/jam</option>`)
     .join('');
+
+  select.onchange = tampilkanJadwalUnit;
+  tampilkanJadwalUnit();
 
   const listDiv = document.getElementById('listConsole');
   listDiv.innerHTML = data.map(c => `
@@ -24,15 +27,56 @@ async function muatDaftarConsole() {
   `).join('');
 }
 
+// Tampilkan daftar jam yang sudah dibooking untuk unit yang sedang dipilih
+async function tampilkanJadwalUnit() {
+  const consoleId = document.getElementById('consoleId').value;
+  const jadwalDiv = document.getElementById('jadwalUnit');
+  if (!consoleId) { jadwalDiv.innerHTML = ''; return; }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/rentals/jadwal/${consoleId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      jadwalDiv.innerHTML = '✅ Belum ada jadwal booking untuk unit ini.';
+      return;
+    }
+
+    const formatJam = (iso) => new Date(iso).toLocaleString('id-ID', {
+      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+    });
+
+    jadwalDiv.innerHTML = '⏰ Jam yang sudah dibooking:<br>' + data.map(j => {
+      const mulai = new Date(j.jam_mulai);
+      const selesai = new Date(mulai.getTime() + j.durasi_jam * 3600000);
+      return `• ${formatJam(mulai)} - ${selesai.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
+    }).join('<br>');
+  } catch (err) {
+    jadwalDiv.innerHTML = '';
+  }
+}
+
+// Set default jam mulai = waktu sekarang saat halaman dibuka
+function setJamMulaiDefault() {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // koreksi ke waktu lokal
+  document.getElementById('jamMulai').value = now.toISOString().slice(0, 16);
+}
+setJamMulaiDefault();
+
 document.getElementById('formSewa').addEventListener('submit', async (e) => {
   e.preventDefault();
   const errorMsg = document.getElementById('errorMsg');
   errorMsg.textContent = '';
 
+  const jamMulaiInput = document.getElementById('jamMulai').value; // format: YYYY-MM-DDTHH:MM
   const body = {
     console_id: document.getElementById('consoleId').value,
     nama_penyewa: document.getElementById('namaPenyewa').value,
     no_hp: document.getElementById('noHp').value,
+    jam_mulai: jamMulaiInput.replace('T', ' ') + ':00',
     durasi_jam: parseInt(document.getElementById('durasiJam').value)
   };
 

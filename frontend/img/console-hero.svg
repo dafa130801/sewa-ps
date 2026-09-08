@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="560" viewBox="0 0 380 560">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2f1c4d"/>
+      <stop offset="100%" stop-color="#160c28"/>
+    </linearGradient>
+    <linearGradient id="glowline" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2de6e0"/>
+      <stop offset="50%" stop-color="#c58bff"/>
+      <stop offset="100%" stop-color="#ff2e93"/>
+    </linearGradient>
+    <radialGradient id="stickGlowC" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2de6e0" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#2de6e0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="stickGlowM" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff2e93" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#ff2e93" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blurGlow"><feGaussianBlur stdDeviation="16"/></filter>
+  </defs>
+
+  <ellipse cx="190" cy="280" rx="160" ry="250" fill="#ff2e93" opacity="0.18" filter="url(#blurGlow)"/>
+  <ellipse cx="210" cy="190" rx="120" ry="180" fill="#2de6e0" opacity="0.15" filter="url(#blurGlow)"/>
+
+  <g transform="translate(70,20)">
+    <!-- kaki kiri -->
+    <path d="M40 0 C10 0 0 30 0 60 L0 440 C0 470 10 500 40 500 L60 500 C75 500 80 485 80 470 L80 30 C80 15 75 0 60 0 Z"
+          fill="url(#body)" stroke="#4a3570" stroke-width="2"/>
+    <!-- kaki kanan -->
+    <path d="M140 0 C170 0 180 30 180 60 L180 440 C180 470 170 500 140 500 L120 500 C105 500 100 485 100 470 L100 30 C100 15 105 0 120 0 Z"
+          fill="url(#body)" stroke="#4a3570" stroke-width="2"/>
+    <!-- strip cahaya tengah -->
+    <rect x="82" y="6" width="16" height="484" rx="8" fill="url(#glowline)"/>
+
+    <!-- ventilasi atas kiri & kanan -->
+    <g stroke="#5a4485" stroke-width="2" opacity="0.55">
+      <line x1="16" y1="70" x2="64" y2="70"/>
+      <line x1="16" y1="83" x2="64" y2="83"/>
+      <line x1="16" y1="96" x2="64" y2="96"/>
+      <line x1="116" y1="70" x2="164" y2="70"/>
+      <line x1="116" y1="83" x2="164" y2="83"/>
+      <line x1="116" y1="96" x2="164" y2="96"/>
+    </g>
+
+    <!-- D-PAD kiri -->
+    <g transform="translate(24,150)" fill="none" stroke="#2de6e0" stroke-width="2.4" opacity="0.9">
+      <path d="M14 0 h8 v10 h10 v8 h-10 v10 h-8 v-10 h-10 v-8 h10 Z"/>
+    </g>
+
+    <!-- Tombol kanan: segitiga, lingkaran, silang, kotak -->
+    <g transform="translate(118,150)" stroke="#ff2e93" stroke-width="2.2" fill="none" opacity="0.9">
+      <path d="M18 0 l7 -7 l7 7 l-7 7 Z"/>
+      <circle cx="34" cy="18" r="7"/>
+      <path d="M11 25 l-7 -7 M4 25 l7 -7" stroke-linecap="round"/>
+      <rect x="4" y="30" width="14" height="14" rx="2"/>
+    </g>
+
+    <!-- Analog stick kiri -->
+    <g transform="translate(40,250)">
+      <circle r="26" fill="url(#stickGlowC)"/>
+      <circle r="17" fill="#1c1130" stroke="#2de6e0" stroke-width="2"/>
+      <circle r="9" fill="none" stroke="#2de6e0" stroke-width="1.6" opacity="0.8"/>
+    </g>
+
+    <!-- Analog stick kanan -->
+    <g transform="translate(140,250)">
+      <circle r="26" fill="url(#stickGlowM)"/>
+      <circle r="17" fill="#1c1130" stroke="#ff2e93" stroke-width="2"/>
+      <circle r="9" fill="none" stroke="#ff2e93" stroke-width="1.6" opacity="0.8"/>
+    </g>
+
+    <!-- garis dekorasi bawah -->
+    <g stroke="#5a4485" stroke-width="2" opacity="0.5">
+      <line x1="16" y1="330" x2="64" y2="330"/>
+      <line x1="116" y1="330" x2="164" y2="330"/>
+    </g>
+
+    <!-- tombol kecil menu/options -->
+    <rect x="30" y="360" width="20" height="6" rx="3" fill="#2de6e0" opacity="0.7"/>
+    <rect x="130" y="360" width="20" height="6" rx="3" fill="#ff2e93" opacity="0.7"/>
+
+    <!-- lampu ujung bawah -->
+    <circle cx="40" cy="475" r="6" fill="#2de6e0" opacity="0.9">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="140" cy="475" r="6" fill="#ff2e93" opacity="0.9">
+      <animate attributeName="opacity" values="1;0.4;1" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>
