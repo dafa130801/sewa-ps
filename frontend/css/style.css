@@ -25,8 +25,8 @@
 }
 
 body {
-    background-color: #0d081d; /* Fallback warna gelap jika gambar gagal load */
-    background-image: linear-gradient(rgba(15, 10, 30, 0.5), rgba(15, 10, 30, 0.5)), url('https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1920&auto=format&fit=crop');
+    background-color: #0d081d;
+    background-image: linear-gradient(rgba(15, 10, 30, 0.35), rgba(15, 10, 30, 0.35)), url('https://upload.wikimedia.org/wikipedia/commons/b/b1/M31_Lanham.jpg');
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
