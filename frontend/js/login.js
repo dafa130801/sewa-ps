@@ -1,1 +1,1 @@
-// Login Logic
+window.location.href = 'dashboard.html';

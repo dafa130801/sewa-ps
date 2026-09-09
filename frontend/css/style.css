@@ -1,37 +1,30 @@
-/* ========================================= */
-/* STYLE - SEWA PS (tema neon arcade)         */
-/* ========================================= */
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-
+/* ==========================================
+   RESET & VARIABLE BASE
+   ========================================== */
 :root {
-  --bg: #120a1f;
-  --bg-panel: #1c1130;
-  --bg-panel-2: #24163d;
-  --line: #382655;
-  --text: #f1ecff;
-  --text-dim: #a999c9;
-  --magenta: #ff2e93;
-  --cyan: #2de6e0;
-  --gold: #ffd166;
-  --green: #3ddc84;
-  --red: #ff5470;
+    --bg-dark: #0b051a;
+    --bg-panel: rgba(22, 12, 44, 0.7);
+    --line: rgba(0, 229, 255, 0.3);
+    --text: #ffffff;
+    --text-muted: #a0a0c0;
+    --primary-cyan: #00e5ff;
+    --primary-pink: #ff2e93;
 }
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
+/* ==========================================
+   BACKGROUND PS5 GALACTIC PURPLE (PURE CSS)
+   ========================================== */
 body {
     min-height: 100vh;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: var(--text);
-    background-color: #0b051a;
+    background-color: var(--bg-dark);
     background-image: 
         radial-gradient(circle at 15% 20%, rgba(157, 0, 255, 0.35) 0%, transparent 45%),
         radial-gradient(circle at 85% 80%, rgba(0, 229, 255, 0.25) 0%, transparent 40%),
@@ -45,236 +38,93 @@ body {
     background-attachment: fixed;
 }
 
-h1, h2, .brand {
-  font-family: 'Baloo 2', 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700;
-}
-
-.navbar {
-  background: var(--bg-panel);
-  padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 3px solid transparent;
-  border-image: linear-gradient(90deg, var(--magenta), var(--cyan)) 1;
-}
-
-.navbar h1 {
-  font-size: 21px;
-  letter-spacing: 0.3px;
-  background: linear-gradient(90deg, var(--magenta), var(--gold));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.navbar a, .navbar button {
-  color: var(--text);
-  text-decoration: none;
-  margin-left: 12px;
-  background: var(--bg-panel-2);
-  border: 1px solid var(--line);
-  padding: 8px 16px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  transition: border-color 0.15s, transform 0.15s;
-}
-
-.navbar a:hover, .navbar button:hover {
-  border-color: var(--cyan);
-  transform: translateY(-1px);
-}
-
-.container {
-  max-width: 1000px;
-  margin: 32px auto;
-  padding: 0 16px;
-}
-
-.card {
-  background: var(--bg-panel);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 26px;
-  margin-bottom: 20px;
+/* ==========================================
+   GLASSMORPHISM PANELS (CARD, MODAL, LOGIN)
+   ========================================== */
+.card, .login-box, .modal-content, .sidebar, .navbar {
+    background: var(--bg-panel) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 229, 255, 0.15) !important;
 }
 
 .login-box {
-  max-width: 380px;
-  margin: 80px auto;
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 30px;
 }
 
-h2 {
-  margin-bottom: 18px;
-  font-size: 22px;
-  color: var(--text);
+/* ==========================================
+   HEADER & TYPOGRAPHY
+   ========================================== */
+h1, h2, h3, h4, h5, h6, .brand {
+    font-family: 'Baloo 2', 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    color: var(--text);
 }
 
-h2::before {
-  content: '▸';
-  color: var(--magenta);
-  margin-right: 8px;
+a {
+    color: var(--primary-cyan);
+    text-decoration: none;
 }
 
-label {
-  display: block;
-  margin: 14px 0 6px;
-  font-size: 13px;
-  color: var(--text-dim);
-  font-weight: 500;
+a:hover {
+    color: var(--primary-pink);
+    text-decoration: underline;
 }
 
-input, select {
-  width: 100%;
-  padding: 11px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
+/* ==========================================
+   FORM INPUTS & BUTTONS
+   ========================================== */
+.form-control, .form-select {
+    background: rgba(10, 5, 25, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #fff !important;
+    border-radius: 8px;
+    padding: 10px 14px;
 }
 
-input:focus, select:focus {
-  outline: none;
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 3px rgba(45,230,224,0.15);
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-cyan) !important;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.3) !important;
 }
 
-button.btn-primary {
-  margin-top: 20px;
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(90deg, var(--magenta), #ff6a9c);
-  color: #fff;
-  font-weight: 700;
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: 15px;
-  box-shadow: 0 6px 20px rgba(255,46,147,0.35);
-  transition: transform 0.15s, box-shadow 0.15s;
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-cyan) 0%, var(--primary-pink) 100%) !important;
+    border: none !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.3) !important;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-button.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(255,46,147,0.45);
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(255, 46, 147, 0.5) !important;
 }
 
-.grid-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+/* ==========================================
+   TABLES & DASHBOARD COMPONENTS
+   ========================================== */
+.table {
+    color: var(--text) !important;
 }
 
-.console-card {
-  background: var(--bg-panel-2);
-  border-radius: 10px;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--cyan);
-  position: relative;
-  overflow: hidden;
+.table th {
+    background: rgba(0, 229, 255, 0.1) !important;
+    color: var(--primary-cyan) !important;
+    border-bottom: 1px solid var(--line) !important;
 }
 
-.console-card::after {
-  content: '';
-  position: absolute;
-  top: -30px;
-  right: -30px;
-  width: 70px;
-  height: 70px;
-  background: radial-gradient(circle, rgba(45,230,224,0.25), transparent 70%);
-}
-
-.console-card.disewa {
-  border-left-color: var(--red);
-}
-.console-card.disewa::after {
-  background: radial-gradient(circle, rgba(255,84,112,0.25), transparent 70%);
-}
-
-.console-card.maintenance {
-  border-left-color: var(--gold);
-}
-.console-card.maintenance::after {
-  background: radial-gradient(circle, rgba(255,209,102,0.25), transparent 70%);
+.table td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    vertical-align: middle;
 }
 
 .badge {
-  display: inline-block;
-  padding: 3px 12px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  margin-top: 8px;
-}
-
-.badge.tersedia { background: rgba(61,220,132,0.15); color: var(--green); }
-.badge.disewa { background: rgba(255,84,112,0.15); color: var(--red); }
-.badge.maintenance { background: rgba(255,209,102,0.15); color: var(--gold); }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 12px;
-}
-
-th, td {
-  text-align: left;
-  padding: 12px 10px;
-  border-bottom: 1px solid var(--line);
-  font-size: 13.5px;
-}
-
-th {
-  color: var(--cyan);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 700;
-}
-
-.btn-small {
-  padding: 7px 14px;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  font-size: 12.5px;
-  font-weight: 700;
-  margin: 2px;
-}
-
-.btn-selesai { background: var(--green); color: #052e16; }
-.btn-hapus { background: var(--red); color: #450a0a; }
-
-.error-msg {
-  color: var(--red);
-  margin-top: 10px;
-  font-size: 14px;
-}
-
-.flex-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* EFEK KACA KOTAK LOGIN & GLOW CYAN */
-.card, .login-box {
-    background: rgba(22, 16, 42, 0.65) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(0, 229, 255, 0.5) !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 229, 255, 0.3) !important;
-}
-
-/* WAPING TOMBOL NEON */
-.btn-primary {
-    background: linear-gradient(135deg, #00e5ff 0%, #ff2e93 100%) !important;
-    border: none !important;
-    box-shadow: 0 0 15px rgba(0, 229, 255, 0.4) !important;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
 }
