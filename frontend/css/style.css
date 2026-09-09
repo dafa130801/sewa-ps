@@ -252,3 +252,19 @@ th {
   justify-content: space-between;
   align-items: center;
 }
+
+/* EFEK KACA KOTAK LOGIN & GLOW CYAN */
+.card, .login-box {
+    background: rgba(22, 16, 42, 0.65) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(0, 229, 255, 0.5) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 229, 255, 0.3) !important;
+}
+
+/* WAPING TOMBOL NEON */
+.btn-primary {
+    background: linear-gradient(135deg, #00e5ff 0%, #ff2e93 100%) !important;
+    border: none !important;
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.4) !important;
+}
