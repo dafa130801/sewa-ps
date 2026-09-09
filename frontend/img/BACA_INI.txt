@@ -1,3 +1,1 @@
-Ganti file ini dengan gambar QR code kamu sendiri.
-Nama file HARUS: qris.jpg
-(atau edit dashboard.html, cari "img/qris.jpg", ganti ke nama file kamu, misal qris.png)
+Folder images untuk aset frontend sewa PS.
