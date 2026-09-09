@@ -25,10 +25,14 @@
 }
 
 body {
- background: url('https://images.hdqwalls.com/wallpapers/playstation-5-galactic-purple-4k-3s.jpg') no-repeat center center fixed;
-    background-size: cover; 
-  color: var(--text);
-  min-height: 100vh;
+    background-color: #0d081d; /* Fallback warna gelap jika gambar gagal load */
+    background-image: linear-gradient(rgba(15, 10, 30, 0.5), rgba(15, 10, 30, 0.5)), url('https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1920&auto=format&fit=crop');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    background-size: cover;
+    color: var(--text);
+    min-height: 100vh;
 }
 
 h1, h2, .brand {
