@@ -44,15 +44,26 @@ async function tampilkanJadwalUnit() {
       return;
     }
 
-    const formatJam = (iso) => new Date(iso).toLocaleString('id-ID', {
-      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
-    });
+    const formatJamAman = (iso) => {
+    if (!iso) return '';
+    const parts = iso.includes('T') ? iso.split('T') : iso.split(' ');
+    const tgl = parts[0]; // YYYY-MM-DD
+    const jam = parts[1].substring(0, 5); // HH:mm
+    return `${tgl} ${jam}`;
+  };
 
-    jadwalDiv.innerHTML = '⏰ Jam yang sudah dibooking:<br>' + data.map(j => {
-      const mulai = new Date(j.jam_mulai);
-      const selesai = new Date(mulai.getTime() + j.durasi_jam * 3600000);
-      return `• ${formatJam(mulai)} - ${selesai.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
-    }).join('<br>');
+  jadwalDiv.innerHTML = '⏰ Jam yang sudah dibooking:<br>' + data.map(j => {
+    // Ambil jam & menit awal
+    const timePart = j.jam_mulai.includes('T') ? j.jam_mulai.split('T')[1] : j.jam_mulai.split(' ')[1];
+    const [h, m] = timePart.substring(0, 5).split(':').map(Number);
+    
+    // Hitung jam selesai secara manual tanpa new Date()
+    const jamMulaiStr = `${timePart.substring(0, 5)}`;
+    const endHour = (h + Number(j.durasi_jam)) % 24;
+    const jamSelesaiStr = `${String(endHour).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+
+    return `• ${jamMulaiStr} - ${jamSelesaiStr}`;
+  }).join('<br>');
   } catch (err) {
     jadwalDiv.innerHTML = '';
   }
