@@ -25,10 +25,8 @@
 }
 
 body {
-  background:
-    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(255,46,147,0.18), transparent 60%),
-    radial-gradient(ellipse 700px 500px at 100% 0%, rgba(45,230,224,0.14), transparent 55%),
-    var(--bg);
+ background: url('https://images.hdqwalls.com/wallpapers/playstation-5-galactic-purple-4k-3s.jpg') no-repeat center center fixed;
+    background-size: cover; 
   color: var(--text);
   min-height: 100vh;
 }
