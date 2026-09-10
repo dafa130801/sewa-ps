@@ -4,6 +4,26 @@
 const token = wajibLogin();
 terapkanTampilanRole();
 
+let rentalIdAktif = null; // <-- TAMBAHKAN BARIS INI DI SINI
+
+function getLocalConsoles() {
+  const data = localStorage.getItem('local_consoles');
+  if (!data) {
+    const defaultData = [
+      { id: 1, nama: 'Bilik 1', tipe: 'PS3', harga_per_jam: 5000, status: 'tersedia' }
+    ];
+    localStorage.setItem('local_consoles', JSON.stringify(defaultData));
+    return defaultData;
+  }
+  return JSON.parse(data);
+}// =========================================
+// LOGIC HALAMAN DASHBOARD (Local Storage Mode)
+// =========================================
+const token = wajibLogin();
+terapkanTampilanRole();
+
+let rentalIdAktif = null; // <-- TAMBAHKAN BARIS INI DI SINI
+
 function getLocalConsoles() {
   const data = localStorage.getItem('local_consoles');
   if (!data) {
