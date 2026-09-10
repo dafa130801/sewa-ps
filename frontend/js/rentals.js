@@ -3,88 +3,76 @@
 // =========================================
 const token = wajibLogin();
 terapkanTampilanRole();
-const user = getUserLogin();
-const bisaSelesaikan = user && (user.role === 'admin' || user.role === 'superadmin');
 
-function getLocalRentals() {
-  const data = localStorage.getItem('local_rentals');
-  if (!data) {
-    return [];
-  }
-  return JSON.parse(data);
-}
+function muatDaftarRentals() {
+  const container = document.getElementById('listRentals') || document.querySelector('tbody');
+  const rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
+  const userLogin = typeof getUserLogin === 'function' ? getUserLogin() : { role: 'admin' };
+  const isAdmin = userLogin && (userLogin.role === 'admin' || userLogin.role === 'superadmin');
 
-function saveLocalRentals(rentals) {
-  localStorage.setItem('local_rentals', JSON.stringify(rentals));
-}
+  if (!container) return;
 
-// Fungsi bantu untuk menangkap transaksi baru dari dashboard
-window.tambahRentalBaru = function(newItem) {
-  const rentals = getLocalRentals();
-  rentals.unshift(newItem);
-  saveLocalRentals(rentals);
-};
-
-function muatRiwayat() {
-  const data = getLocalRentals();
-  const tabelRental = document.getElementById('tabelRental');
-  if (!tabelRental) return;
-
-  if (data.length === 0) {
-    tabelRental.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8;">Belum ada riwayat transaksi.</td></tr>`;
+  if (rentals.length === 0) {
+    container.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#94a3b8;">Belum ada riwayat transaksi.</td></tr>`;
     return;
   }
 
-  tabelRental.innerHTML = data.map(r => `
-    <tr>
-      <td>${r.nama_console} (${r.tipe})</td>
-      <td>${r.nama_penyewa}</td>
-      <td>${r.no_hp || '-'}</td>
-      <td>${r.durasi_jam} jam</td>
-      <td>Rp${r.total_harga}</td>
-      <td><span class="badge ${r.status === 'berjalan' ? 'disewa' : 'tersedia'}">${r.status}</span></td>
-      <td>${labelPembayaran(r.payment_status)}</td>
-      <td>
-        ${r.payment_status === 'menunggu_konfirmasi' && bisaSelesaikan
-          ? `<button class="btn-small btn-selesai" onclick="konfirmasiBayar(${r.id})">Konfirmasi Lunas</button>`
-          : ''}
-        ${r.status === 'berjalan' && bisaSelesaikan
-          ? `<button class="btn-small btn-selesai" onclick="selesaikanSewa(${r.id})">Selesai</button>`
-          : (r.payment_status !== 'menunggu_konfirmasi' && r.status !== 'berjalan' ? '-' : '')}
-      </td>
-    </tr>
-  `).join('');
+  container.innerHTML = rentals.map((r, index) => {
+    let badgeClass = 'badge-pending';
+    let statusText = r.status || 'pending';
+
+    let payBadge = 'badge-danger';
+    let payText = 'Belum Bayar';
+    if (r.payment_status === 'menunggu_konfirmasi') {
+      payBadge = 'badge-warning';
+      payText = '⏳ Menunggu Konfirmasi';
+    } else if (r.payment_status === 'lunas') {
+      payBadge = 'badge-success';
+      payText = '✅ Lunas';
+    }
+
+    // Tombol aksi khusus admin jika status pembayaran menunggu konfirmasi
+    let aksiBtn = '-';
+    if (isAdmin && r.payment_status === 'menunggu_konfirmasi') {
+      aksiBtn = `<button class="btn-small" onclick="konfirmasiPembayaran(${r.id})" style="background:#10b981; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Konfirmasi</button>`;
+    } else if (isAdmin) {
+      aksiBtn = `<button class="btn-small" onclick="hapusRental(${r.id})" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Hapus</button>`;
+    }
+
+    return `
+      <tr>
+        <td>${r.nama_console || 'Bilik'} (${r.tipe || 'PS3'})</td>
+        <td>${r.nama_penyewa || 'User'}</td>
+        <td>${r.no_hp || '-'}</td>
+        <td>${r.durasi_jam || 1} jam</td>
+        <td>Rp${r.total_harga || 0}</td>
+        <td><span class="badge ${badgeClass}">${statusText}</span></td>
+        <td><span class="badge ${payBadge}">${payText}</span></td>
+        <td>${aksiBtn}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
-function labelPembayaran(status) {
-  if (status === 'lunas') return '✅ Lunas';
-  if (status === 'menunggu_konfirmasi') return '⏳ Menunggu Konfirmasi';
-  return '❌ Belum Bayar';
-}
-
-function konfirmasiBayar(id) {
-  let rentals = getLocalRentals();
+function konfirmasiPembayaran(id) {
+  let rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
   rentals = rentals.map(r => {
     if (r.id === id) {
       r.payment_status = 'lunas';
-      r.status = 'berjalan';
-    }
-    return r;
-  });
-  saveLocalRentals(rentals);
-  muatRiwayat();
-}
-
-function selesaikanSewa(id) {
-  let rentals = getLocalRentals();
-  rentals = rentals.map(r => {
-    if (r.id === id) {
       r.status = 'selesai';
     }
     return r;
   });
-  saveLocalRentals(rentals);
-  muatRiwayat();
+  localStorage.setItem('local_rentals', JSON.stringify(rentals));
+  muatDaftarRentals();
 }
 
-muatRiwayat();
+function hapusRental(id) {
+  if (!confirm('Yakin ingin menghapus riwayat ini?')) return;
+  let rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
+  rentals = rentals.filter(r => r.id !== id);
+  localStorage.setItem('local_rentals', JSON.stringify(rentals));
+  muatDaftarRentals();
+}
+
+muatDaftarRentals();
