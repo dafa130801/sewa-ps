@@ -1,27 +1,41 @@
 // =========================================
-// LOGIC HALAMAN RIWAYAT SEWA
-// - user hanya melihat transaksi miliknya (dibatasi otomatis oleh backend)
-// - admin/superadmin melihat semua + tombol Selesai
+// LOGIC HALAMAN RIWAYAT SEWA (Local Storage Mode)
 // =========================================
 const token = wajibLogin();
 terapkanTampilanRole();
 const user = getUserLogin();
 const bisaSelesaikan = user && (user.role === 'admin' || user.role === 'superadmin');
 
-async function muatRiwayat() {
-  const res = await fetch(`${API_BASE_URL}/rentals`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
+function getLocalRentals() {
+  const data = localStorage.getItem('local_rentals');
+  if (!data) {
+    return [];
+  }
+  return JSON.parse(data);
+}
 
-  if (res.status === 401 || res.status === 403) {
-    sessionStorage.clear();
-    window.location.href = 'login.html';
+function saveLocalRentals(rentals) {
+  localStorage.setItem('local_rentals', JSON.stringify(rentals));
+}
+
+// Fungsi bantu untuk menangkap transaksi baru dari dashboard
+window.tambahRentalBaru = function(newItem) {
+  const rentals = getLocalRentals();
+  rentals.unshift(newItem);
+  saveLocalRentals(rentals);
+};
+
+function muatRiwayat() {
+  const data = getLocalRentals();
+  const tabelRental = document.getElementById('tabelRental');
+  if (!tabelRental) return;
+
+  if (data.length === 0) {
+    tabelRental.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8;">Belum ada riwayat transaksi.</td></tr>`;
     return;
   }
 
-  const data = await res.json();
-
-  document.getElementById('tabelRental').innerHTML = data.map(r => `
+  tabelRental.innerHTML = data.map(r => `
     <tr>
       <td>${r.nama_console} (${r.tipe})</td>
       <td>${r.nama_penyewa}</td>
@@ -36,7 +50,7 @@ async function muatRiwayat() {
           : ''}
         ${r.status === 'berjalan' && bisaSelesaikan
           ? `<button class="btn-small btn-selesai" onclick="selesaikanSewa(${r.id})">Selesai</button>`
-          : (r.payment_status !== 'menunggu_konfirmasi' ? '-' : '')}
+          : (r.payment_status !== 'menunggu_konfirmasi' && r.status !== 'berjalan' ? '-' : '')}
       </td>
     </tr>
   `).join('');
@@ -48,19 +62,28 @@ function labelPembayaran(status) {
   return '❌ Belum Bayar';
 }
 
-async function konfirmasiBayar(id) {
-  await fetch(`${API_BASE_URL}/rentals/${id}/konfirmasi`, {
-    method: 'PUT',
-    headers: { 'Authorization': `Bearer ${token}` }
+function konfirmasiBayar(id) {
+  let rentals = getLocalRentals();
+  rentals = rentals.map(r => {
+    if (r.id === id) {
+      r.payment_status = 'lunas';
+      r.status = 'berjalan';
+    }
+    return r;
   });
+  saveLocalRentals(rentals);
   muatRiwayat();
 }
 
-async function selesaikanSewa(id) {
-  await fetch(`${API_BASE_URL}/rentals/${id}/selesai`, {
-    method: 'PUT',
-    headers: { 'Authorization': `Bearer ${token}` }
+function selesaikanSewa(id) {
+  let rentals = getLocalRentals();
+  rentals = rentals.map(r => {
+    if (r.id === id) {
+      r.status = 'selesai';
+    }
+    return r;
   });
+  saveLocalRentals(rentals);
   muatRiwayat();
 }
 

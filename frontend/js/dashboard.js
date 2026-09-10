@@ -65,26 +65,55 @@ document.getElementById('formSewa').addEventListener('submit', (e) => {
   const consoles = getLocalConsoles();
   const consoleId = document.getElementById('consoleId').value;
   const selectedConsole = consoles.find(c => c.id == consoleId);
+  
+  const namaConsole = selectedConsole ? selectedConsole.nama : 'Bilik';
+  const tipeConsole = selectedConsole ? selectedConsole.tipe : 'PS3';
   const hargaPerJam = selectedConsole ? selectedConsole.harga_per_jam : 5000;
-  
   const totalHarga = durasi * hargaPerJam;
-  
+
+  const userLogin = typeof getUserLogin === 'function' ? getUserLogin() : null;
+  const namaPenyewa = document.getElementById('namaPenyewa').value || (userLogin ? userLogin.username : 'Admin');
+  const noHp = document.getElementById('noHp').value;
+
+  const newRental = {
+    id: Date.now(),
+    nama_console: namaConsole,
+    tipe: tipeConsole,
+    nama_penyewa: namaPenyewa,
+    no_hp: noHp,
+    durasi_jam: durasi,
+    total_harga: totalHarga,
+    status: 'pending',
+    payment_status: 'belum_bayar'
+  };
+
+  if (window.tambahRentalBaru) {
+    window.tambahRentalBaru(newRental);
+  } else {
+    const existing = JSON.parse(localStorage.getItem('local_rentals') || '[]');
+    existing.unshift(newRental);
+    localStorage.setItem('local_rentals', JSON.stringify(existing));
+  }
+
+  rentalIdAktif = newRental.id;
+
   document.getElementById('formSewa').reset();
   setJamMulaiDefault();
-  tampilkanModalQris(Date.now(), totalHarga);
+  tampilkanModalQris(newRental.id, totalHarga);
 });
-
-let rentalIdAktif = null;
-
-function tampilkanModalQris(rentalId, totalHarga) {
-  rentalIdAktif = rentalId;
-  document.getElementById('qrisTotal').textContent = `Total: Rp${totalHarga}`;
-  document.getElementById('qrisStatus').textContent = 'Silakan scan & transfer sesuai total di atas.';
-  document.getElementById('modalQris').style.display = 'flex';
-}
 
 function tandaiSudahBayar() {
   if (!rentalIdAktif) return;
+  
+  let rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
+  rentals = rentals.map(r => {
+    if (r.id === rentalIdAktif) {
+      r.payment_status = 'menunggu_konfirmasi';
+    }
+    return r;
+  });
+  localStorage.setItem('local_rentals', JSON.stringify(rentals));
+
   document.getElementById('qrisStatus').textContent = '⏳ Menunggu konfirmasi admin...';
 }
 
