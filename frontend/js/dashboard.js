@@ -45,8 +45,30 @@ function muatDaftarConsole() {
 
 function tampilkanJadwalUnit() {
   const jadwalDiv = document.getElementById('jadwalUnit');
-  if (jadwalDiv) {
+  const consoleId = document.getElementById('consoleId').value;
+  if (!jadwalDiv) return;
+
+  const rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
+  const consoles = getLocalConsoles();
+  const selectedConsole = consoles.find(c => c.id == consoleId);
+  
+  if (!selectedConsole) {
     jadwalDiv.innerHTML = '✅ Belum ada jadwal booking untuk unit ini.';
+    return;
+  }
+
+  // Filter rental yang aktif atau belum lunas untuk unit ini
+  const activeRentals = rentals.filter(r => 
+    r.nama_console === selectedConsole.nama && 
+    r.payment_status !== 'lunas' && 
+    r.status !== 'batal'
+  );
+
+  if (activeRentals.length > 0) {
+    let listJadwal = activeRentals.map(r => `• ${r.nama_penyewa} (${r.durasi_jam} jam)`).join('<br>');
+    jadwalDiv.innerHTML = `<span style="color:#ef4444; font-weight:bold;">⚠️ Unit sedang disewa/dibooking:</span><br>${listJadwal}`;
+  } else {
+    jadwalDiv.innerHTML = '✅ Unit tersedia untuk dibooking.';
   }
 }
 
@@ -101,6 +123,7 @@ document.getElementById('formSewa').addEventListener('submit', (e) => {
 
   document.getElementById('formSewa').reset();
   setJamMulaiDefault();
+  tampilkanJadwalUnit();
   tampilkanModalQris(newRental.id, totalHarga);
 });
 
@@ -131,12 +154,14 @@ function tandaiSudahBayar() {
 
   const qrisStatus = document.getElementById('qrisStatus');
   if (qrisStatus) qrisStatus.textContent = '⏳ Menunggu konfirmasi admin...';
+  muatDaftarConsole();
 }
 
 function tutupModalQris() {
   const modalQris = document.getElementById('modalQris');
   if (modalQris) modalQris.style.display = 'none';
   rentalIdAktif = null;
+  muatDaftarConsole();
 }
 
 muatDaftarConsole();
