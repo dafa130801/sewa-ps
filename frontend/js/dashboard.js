@@ -1,107 +1,77 @@
 // =========================================
-// LOGIC HALAMAN DASHBOARD
+// LOGIC HALAMAN DASHBOARD (Local Storage Mode)
 // =========================================
 const token = wajibLogin();
 terapkanTampilanRole();
 
-async function muatDaftarConsole() {
-  const res = await fetch(`${API_BASE_URL}/consoles`);
-  const data = await res.json();
-
-  const select = document.getElementById('consoleId');
-  select.innerHTML = data
-    .filter(c => c.status !== 'maintenance')
-    .map(c => `<option value="${c.id}">${c.nama} (${c.tipe}) - Rp${c.harga_per_jam}/jam</option>`)
-    .join('');
-
-  select.onchange = tampilkanJadwalUnit;
-  tampilkanJadwalUnit();
-
-  const listDiv = document.getElementById('listConsole');
-  listDiv.innerHTML = data.map(c => `
-    <div class="console-card ${c.status}">
-      <strong>${c.nama}</strong>
-      <p>${c.tipe} — Rp${c.harga_per_jam}/jam</p>
-      <span class="badge ${c.status}">${c.status}</span>
-    </div>
-  `).join('');
+function getLocalConsoles() {
+  const data = localStorage.getItem('local_consoles');
+  if (!data) {
+    const defaultData = [
+      { id: 1, nama: 'Bilik 1', tipe: 'PS3', harga_per_jam: 5000, status: 'tersedia' }
+    ];
+    localStorage.setItem('local_consoles', JSON.stringify(defaultData));
+    return defaultData;
+  }
+  return JSON.parse(data);
 }
 
-// Tampilkan daftar jam yang sudah dibooking untuk unit yang sedang dipilih
-async function tampilkanJadwalUnit() {
-  const consoleId = document.getElementById('consoleId').value;
-  const jadwalDiv = document.getElementById('jadwalUnit');
-  if (!consoleId) { jadwalDiv.innerHTML = ''; return; }
+function muatDaftarConsole() {
+  const data = getLocalConsoles();
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/rentals/jadwal/${consoleId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
+  const select = document.getElementById('consoleId');
+  if (select) {
+    select.innerHTML = data
+      .filter(c => c.status !== 'maintenance')
+      .map(c => `<option value="${c.id}">${c.nama} (${c.tipe}) - Rp${c.harga_per_jam}/jam</option>`)
+      .join('');
+    select.onchange = tampilkanJadwalUnit;
+    tampilkanJadwalUnit();
+  }
 
-    if (!Array.isArray(data) || data.length === 0) {
-      jadwalDiv.innerHTML = '✅ Belum ada jadwal booking untuk unit ini.';
-      return;
-    }
-
-    const formatJam = (iso) => new Date(iso).toLocaleString('id-ID', {
-      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
-    });
-
-    jadwalDiv.innerHTML = '⏰ Jam yang sudah dibooking:<br>' + data.map(j => {
-      const mulai = new Date(j.jam_mulai);
-      const selesai = new Date(mulai.getTime() + j.durasi_jam * 3600000);
-      return `• ${formatJam(mulai)} - ${selesai.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
-    }).join('<br>');
-  } catch (err) {
-    jadwalDiv.innerHTML = '';
+  const listDiv = document.getElementById('listConsole');
+  if (listDiv) {
+    listDiv.innerHTML = data.map(c => `
+      <div class="console-card ${c.status}">
+        <strong>${c.nama}</strong>
+        <p>${c.tipe} — Rp${c.harga_per_jam}/jam</p>
+        <span class="badge ${c.status}">${c.status}</span>
+      </div>
+    `).join('');
   }
 }
 
-// Set default jam mulai = waktu sekarang saat halaman dibuka
+function tampilkanJadwalUnit() {
+  const jadwalDiv = document.getElementById('jadwalUnit');
+  if (jadwalDiv) {
+    jadwalDiv.innerHTML = '✅ Belum ada jadwal booking untuk unit ini.';
+  }
+}
+
 function setJamMulaiDefault() {
   const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // koreksi ke waktu lokal
-  document.getElementById('jamMulai').value = now.toISOString().slice(0, 16);
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  const jamMulaiEl = document.getElementById('jamMulai');
+  if (jamMulaiEl) jamMulaiEl.value = now.toISOString().slice(0, 16);
 }
 setJamMulaiDefault();
 
-document.getElementById('formSewa').addEventListener('submit', async (e) => {
+document.getElementById('formSewa').addEventListener('submit', (e) => {
   e.preventDefault();
   const errorMsg = document.getElementById('errorMsg');
-  errorMsg.textContent = '';
+  if (errorMsg) errorMsg.textContent = '';
 
-  const jamMulaiInput = document.getElementById('jamMulai').value; // format: YYYY-MM-DDTHH:MM
-  const body = {
-    console_id: document.getElementById('consoleId').value,
-    nama_penyewa: document.getElementById('namaPenyewa').value,
-    no_hp: document.getElementById('noHp').value,
-    jam_mulai: jamMulaiInput.replace('T', ' ') + ':00',
-    durasi_jam: parseInt(document.getElementById('durasiJam').value)
-  };
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/rentals`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      errorMsg.textContent = data.message || 'Gagal membuat transaksi.';
-      return;
-    }
-
-    document.getElementById('formSewa').reset();
-    muatDaftarConsole();
-    tampilkanModalQris(data.id, data.total_harga);
-  } catch (err) {
-    errorMsg.textContent = 'Tidak dapat terhubung ke server backend.';
-  }
+  const durasi = parseInt(document.getElementById('durasiJam').value) || 1;
+  const consoles = getLocalConsoles();
+  const consoleId = document.getElementById('consoleId').value;
+  const selectedConsole = consoles.find(c => c.id == consoleId);
+  const hargaPerJam = selectedConsole ? selectedConsole.harga_per_jam : 5000;
+  
+  const totalHarga = durasi * hargaPerJam;
+  
+  document.getElementById('formSewa').reset();
+  setJamMulaiDefault();
+  tampilkanModalQris(Date.now(), totalHarga);
 });
 
 let rentalIdAktif = null;
@@ -113,24 +83,9 @@ function tampilkanModalQris(rentalId, totalHarga) {
   document.getElementById('modalQris').style.display = 'flex';
 }
 
-async function tandaiSudahBayar() {
+function tandaiSudahBayar() {
   if (!rentalIdAktif) return;
-  try {
-    const res = await fetch(`${API_BASE_URL}/rentals/${rentalIdAktif}/bayar`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.message || 'Gagal menandai pembayaran.');
-      return;
-    }
-
-    document.getElementById('qrisStatus').textContent = '⏳ Menunggu konfirmasi admin...';
-  } catch (err) {
-    alert('Tidak dapat terhubung ke server backend.');
-  }
+  document.getElementById('qrisStatus').textContent = '⏳ Menunggu konfirmasi admin...';
 }
 
 function tutupModalQris() {
