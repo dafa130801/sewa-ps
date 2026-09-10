@@ -10,7 +10,7 @@ async function muatDaftarConsole() {
 
   const select = document.getElementById('consoleId');
   select.innerHTML = data
-    .filter(c => c.status !== 'maintenance')
+    .filter(c => c.status === 'tersedia')
     .map(c => `<option value="${c.id}">${c.nama} (${c.tipe}) - Rp${c.harga_per_jam}/jam</option>`)
     .join('');
 
@@ -24,25 +24,15 @@ async function muatDaftarConsole() {
   `).join('');
 }
 
-// Set default jam mulai = waktu sekarang saat halaman dibuka
-function setJamMulaiDefault() {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // koreksi ke waktu lokal
-  document.getElementById('jamMulai').value = now.toISOString().slice(0, 16);
-}
-setJamMulaiDefault();
-
 document.getElementById('formSewa').addEventListener('submit', async (e) => {
   e.preventDefault();
   const errorMsg = document.getElementById('errorMsg');
   errorMsg.textContent = '';
 
-  const jamMulaiInput = document.getElementById('jamMulai').value; // format: YYYY-MM-DDTHH:MM
   const body = {
     console_id: document.getElementById('consoleId').value,
     nama_penyewa: document.getElementById('namaPenyewa').value,
     no_hp: document.getElementById('noHp').value,
-    jam_mulai: jamMulaiInput.replace('T', ' ') + ':00',
     durasi_jam: parseInt(document.getElementById('durasiJam').value)
   };
 
