@@ -1,12 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.querySelector('form');
+    const loginButton = document.querySelector('button[type="submit"]');
     
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
+    if (loginButton) {
+        loginButton.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Di sini tempat proses login / validasi kamu ke backend
-            // Kalau sukses, baru arahkan ke dashboard:
+            // Langsung alihkan ke halaman dashboard
             window.location.href = 'dashboard.html';
         });
     }
