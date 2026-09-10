@@ -1,134 +1,121 @@
 // =========================================
-// LOGIC HALAMAN DASHBOARD (Local Storage Mode)
+// LOGIC DASHBOARD & SEWA PS (Local Storage Mode)
 // =========================================
-const token = wajibLogin();
-terapkanTampilanRole();
 
 let rentalIdAktif = null;
 
+document.addEventListener('DOMContentLoaded', () => {
+  // Jalankan fungsi pengaman role jika ada
+  if (typeof terapkanTampilanRole === 'function') {
+    terapkanTampilanRole();
+  }
+
+  muatDaftarConsole();
+  isiDropdownConsole();
+  setJamMulaiDefault();
+
+  const consoleSelect = document.getElementById('consoleId');
+  if (consoleSelect) {
+    consoleSelect.addEventListener('change', tampilkanJadwalUnit);
+  }
+
+  const jamMulaiInput = document.getElementById('jamMulai');
+  if (jamMulaiInput) {
+    jamMulaiInput.addEventListener('change', tampilkanJadwalUnit);
+  }
+});
+
 function getLocalConsoles() {
-  const data = localStorage.getItem('local_consoles');
-  if (!data) {
-    const defaultData = [
-      { id: 1, nama: 'Bilik 1', tipe: 'PS3', harga_per_jam: 5000, status: 'tersedia' }
-    ];
-    localStorage.setItem('local_consoles', JSON.stringify(defaultData));
-    return defaultData;
-  }
-  return JSON.parse(data);
+  return JSON.parse(localStorage.getItem('local_consoles') || '[]');
 }
 
-function muatDaftarConsole() {
-  const data = getLocalConsoles();
-
+function isiDropdownConsole() {
   const select = document.getElementById('consoleId');
-  if (select) {
-    select.innerHTML = data
-      .filter(c => c.status !== 'maintenance')
-      .map(c => `<option value="${c.id}">${c.nama} (${c.tipe}) - Rp${c.harga_per_jam}/jam</option>`)
-      .join('');
-    select.onchange = tampilkanJadwalUnit;
-    tampilkanJadwalUnit();
-  }
+  if (!select) return;
 
-  const listDiv = document.getElementById('listConsole');
-  if (listDiv) {
-    listDiv.innerHTML = data.map(c => `
-      <div class="console-card ${c.status}">
-        <strong>${c.nama}</strong>
-        <p>${c.tipe} — Rp${c.harga_per_jam}/jam</p>
-        <span class="badge ${c.status}">${c.status}</span>
-      </div>
-    `).join('');
-  }
-}
-
-function tampilkanJadwalUnit() {
-  const jadwalDiv = document.getElementById('jadwalUnit');
-  const consoleId = document.getElementById('consoleId').value;
-  const inputJamMulai = document.getElementById('jamMulai')?.value;
-  const inputDurasi = parseInt(document.getElementById('durasiJam')?.value) || 1;
-
-  if (!jadwalDiv) return;
-
-  const rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
   const consoles = getLocalConsoles();
-  const selectedConsole = consoles.find(c => c.id == consoleId);
-  
-  if (!selectedConsole) {
-    jadwalDiv.innerHTML = '✅ Belum ada jadwal booking untuk unit ini.';
+  select.innerHTML = '';
+
+  if (consoles.length === 0) {
+    select.innerHTML = '<option value="">-- Belum ada unit konsol --</option>';
     return;
   }
 
-  // Filter SEMUA rental yang valid dan tidak batal untuk unit ini (termasuk yang sudah lunas)
-  const activeRentals = rentals.filter(r => 
-    r.nama_console === selectedConsole.nama && 
-    r.status !== 'batal' &&
-    r.jam_mulai
-  );
+  consoles.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = `${c.nama} (${c.tipe}) - Rp${c.harga_per_jam}/jam`;
+    select.appendChild(opt);
+  });
 
-  if (activeRentals.length === 0) {
-    jadwalDiv.innerHTML = '✅ Unit tersedia pada jam tersebut.';
-    return;
-  }
-
-  // Cek apakah ada bentrok waktu jika input jam mulai tersedia
-  if (inputJamMulai) {
-    const startInput = new Date(inputJamMulai).getTime();
-    const endInput = startInput + (inputDurasi * 3600 * 1000);
-
-    let bentrok = false;
-    let infoBentrok = '';
-
-    for (let r of activeRentals) {
-      const startExisting = new Date(r.jam_mulai).getTime();
-      const endExisting = startExisting + ((r.durasi_jam || 1) * 3600 * 1000);
-
-      // Rumus deteksi irisan waktu (overlap)
-      if (Math.max(startInput, startExisting) < Math.min(endInput, endExisting)) {
-        bentrok = true;
-        const formatMulai = new Date(r.jam_mulai).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
-        const formatSelesai = new Date(endExisting).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
-        
-        infoBentrok = `⚠️ Bilik ini dari ${formatMulai} - ${formatSelesai} sudah dibooking`;
-        break;
-      }
-    }
-
-    if (bentrok) {
-      jadwalDiv.innerHTML = `<span style="color:#ef4444; font-weight:bold;">${infoBentrok}</span>`;
-      return;
-    }
-  }
-
-  // Tampilkan daftar seluruh jadwal aktif unit ini sebagai referensi
-  let listJadwal = activeRentals.map(r => {
-    const startExisting = new Date(r.jam_mulai).getTime();
-    const endExisting = startExisting + ((r.durasi_jam || 1) * 3600 * 1000);
-    const formatMulai = new Date(r.jam_mulai).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
-    const formatSelesai = new Date(endExisting).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
-    
-    return `• Bilik ini dari ${formatMulai} - ${formatSelesai} sudah dibooking (${r.nama_penyewa})`;
-  }).join('<br>');
-
-  jadwalDiv.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">Jadwal terisi pada unit ini:</span><br>${listJadwal}`;
-}
-
-function setJamMulaiDefault() {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  const jamMulaiEl = document.getElementById('jamMulai');
-  if (jamMulaiEl) jamMulaiEl.value = now.toISOString().slice(0, 16);
   tampilkanJadwalUnit();
 }
 
-// Event listener untuk deteksi perubahan waktu/durasi secara real-time
-document.getElementById('jamMulai')?.addEventListener('change', tampilkanJadwalUnit);
-document.getElementById('durasiJam')?.addEventListener('input', tampilkanJadwalUnit);
+function setJamMulaiDefault() {
+  const jamMulaiInput = document.getElementById('jamMulai');
+  if (!jamMulaiInput) return;
 
-setJamMulaiDefault();
+  const sekarang = new Date();
+  sekarang.setMinutes(sekarang.getMinutes() - sekarang.getTimezoneOffset());
+  jamMulaiInput.value = sekarang.toISOString().slice(0, 16);
+}
 
-document.getElementById('formSewa').addEventListener('submit', (e) => {
+function tampilkanJadwalUnit() {
+  const consoleId = document.getElementById('consoleId')?.value;
+  const infoDiv = document.getElementById('jadwalUnit');
+  if (!infoDiv) return;
+
+  if (!consoleId) {
+    infoDiv.innerHTML = '';
+    return;
+  }
+
+  const consoles = getLocalConsoles();
+  const selected = consoles.find(c => c.id == consoleId);
+  if (!selected) return;
+
+  const rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
+  const activeRentals = rentals.filter(r => r.nama_console === selected.nama && r.status !== 'batal');
+
+  if (activeRentals.length === 0) {
+    infoDiv.innerHTML = '<span style="color: #10b981;">✔ Unit tersedia untuk dibooking.</span>';
+  } else {
+    let html = '<span style="color: #f59e0b;">⚠ Jadwal Sewa Terdaftar:</span><ul style="margin: 5px 0 0 20px; padding: 0; font-size: 13px; color: #cbd5e1;">';
+    activeRentals.forEach(r => {
+      const start = new Date(r.jam_mulai).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+      const end = new Date(new Date(r.jam_mulai).getTime() + (r.durasi_jam || 1) * 3600 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+      html += `<li>${start} - ${end} (${r.nama_penyewa})</li>`;
+    });
+    html += '</ul>';
+    infoDiv.innerHTML = html;
+  }
+}
+
+function muatDaftarConsole() {
+  const container = document.getElementById('listConsole');
+  if (!container) return;
+
+  const consoles = getLocalConsoles();
+  if (consoles.length === 0) {
+    container.innerHTML = '<p style="color: #94a3b8; font-size: 14px;">Belum ada data konsol. Silakan tambahkan lewat menu Kelola Unit.</p>';
+    return;
+  }
+
+  let html = '';
+  consoles.forEach(c => {
+    const badgeClass = c.status === 'tersedia' ? 'tersedia' : 'maintenance';
+    html += `
+      <div class="console-card">
+        <strong>${c.nama}</strong> (${c.tipe}) - Rp${c.harga_per_jam}/jam<br>
+        <span class="badge ${badgeClass}">${c.status}</span>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+
+// EVENT SUBMIT SEWA & PEMICU MODAL QRIS
+document.getElementById('formSewa')?.addEventListener('submit', (e) => {
   e.preventDefault();
   const errorMsg = document.getElementById('errorMsg');
   if (errorMsg) errorMsg.textContent = '';
@@ -139,12 +126,12 @@ document.getElementById('formSewa').addEventListener('submit', (e) => {
   const consoleId = document.getElementById('consoleId').value;
   const selectedConsole = consoles.find(c => c.id == consoleId);
   
-  const namaConsole = selectedConsole ? selectedConsole.nama : 'Bilik';
+  const namaConsole = selectedConsole ? selectedConsole.nama : 'Bilik 1';
   const tipeConsole = selectedConsole ? selectedConsole.tipe : 'PS3';
   const hargaPerJam = selectedConsole ? selectedConsole.harga_per_jam : 5000;
   const totalHarga = durasi * hargaPerJam;
 
-  // Validasi ketat pencegahan bentrok saat tombol submit ditekan (termasuk yang sudah lunas)
+  // Validasi bentrok waktu
   const rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
   const startInput = new Date(jamMulaiVal).getTime();
   const endInput = startInput + (durasi * 3600 * 1000);
@@ -154,16 +141,14 @@ document.getElementById('formSewa').addEventListener('submit', (e) => {
       const startExisting = new Date(r.jam_mulai).getTime();
       const endExisting = startExisting + ((r.durasi_jam || 1) * 3600 * 1000);
       if (Math.max(startInput, startExisting) < Math.min(endInput, endExisting)) {
-        const formatMulai = new Date(r.jam_mulai).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
-        const formatSelesai = new Date(endExisting).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
-        alert(`Gagal! Bilik ini dari ${formatMulai} - ${formatSelesai} sudah dibooking.`);
+        alert('Gagal! Jadwal pada jam tersebut sudah dibooking orang lain.');
         return;
       }
     }
   }
 
   const userLogin = typeof getUserLogin === 'function' ? getUserLogin() : null;
-  const namaPenyewa = document.getElementById('namaPenyewa').value || (userLogin ? userLogin.username : 'Admin');
+  const namaPenyewa = document.getElementById('namaPenyewa').value || (userLogin ? userLogin.username : 'User');
   const noHp = document.getElementById('noHp').value;
 
   const newRental = {
@@ -179,19 +164,15 @@ document.getElementById('formSewa').addEventListener('submit', (e) => {
     payment_status: 'belum_bayar'
   };
 
-  if (window.tambahRentalBaru) {
-    window.tambahRentalBaru(newRental);
-  } else {
-    const existing = JSON.parse(localStorage.getItem('local_rentals') || '[]');
-    existing.unshift(newRental);
-    localStorage.setItem('local_rentals', JSON.stringify(existing));
-  }
+  rentals.unshift(newRental);
+  localStorage.setItem('local_rentals', JSON.stringify(rentals));
 
-  rentalIdAktif = newRental.id;
-
+  // Reset form
   document.getElementById('formSewa').reset();
   setJamMulaiDefault();
   tampilkanJadwalUnit();
+  
+  // MUNCULKAN MODAL QRIS
   tampilkanModalQris(newRental.id, totalHarga);
 });
 
@@ -201,7 +182,7 @@ function tampilkanModalQris(rentalId, totalHarga) {
   const qrisStatus = document.getElementById('qrisStatus');
   const modalQris = document.getElementById('modalQris');
 
-  if (qrisTotal) qrisTotal.textContent = `Total: Rp${totalHarga}`;
+  if (qrisTotal) qrisTotal.textContent = `Total: Rp${totalHarga.toLocaleString('id-ID')}`;
   if (qrisStatus) qrisStatus.textContent = 'Silakan scan & transfer sesuai total di atas.';
   if (modalQris) {
     modalQris.style.display = 'flex';
@@ -222,14 +203,18 @@ function tandaiSudahBayar() {
 
   const qrisStatus = document.getElementById('qrisStatus');
   if (qrisStatus) qrisStatus.textContent = '⏳ Menunggu konfirmasi admin...';
-  muatDaftarConsole();
+  
+  setTimeout(() => {
+    tutupModalQris();
+    alert('Pembayaran dilaporkan! Menunggu konfirmasi admin.');
+    window.location.href = 'riwayat.html';
+  }, 1200);
 }
 
 function tutupModalQris() {
   const modalQris = document.getElementById('modalQris');
-  if (modalQris) modalQris.style.display = 'none';
+  if (modalQris) {
+    modalQris.style.display = 'none';
+  }
   rentalIdAktif = null;
-  muatDaftarConsole();
 }
-
-muatDaftarConsole();
