@@ -1,70 +1,66 @@
 // =========================================
-// LOGIC HALAMAN KELOLA USER (khusus superadmin)
+// LOGIC HALAMAN KELOLA USER (Local Storage Mode)
 // =========================================
 const token = wajibLogin();
-terapkanTampilanRole();
+if (typeof terapkanTampilanRole === 'function') {
+  terapkanTampilanRole();
+}
 
-const currentUser = getUserLogin();
-if (currentUser && currentUser.role !== 'superadmin') {
-  alert('Halaman ini khusus superadmin.');
+const currentUser = typeof getUserLogin === 'function' ? getUserLogin() : null;
+if (currentUser && currentUser.role !== 'superadmin' && currentUser.role !== 'admin') {
+  alert('Halaman ini khusus admin/superadmin.');
   window.location.href = 'dashboard.html';
 }
 
-async function muatUser() {
-  const res = await fetch(`${API_BASE_URL}/users`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
+function muatUser() {
+  const tbody = document.getElementById('tabelUser');
+  if (!tbody) return;
 
-  if (res.status === 401 || res.status === 403) {
-    alert('Anda tidak memiliki izin untuk mengakses halaman ini.');
-    window.location.href = 'dashboard.html';
+  const users = JSON.parse(localStorage.getItem('local_users') || '[]');
+
+  if (users.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Belum ada akun terdaftar.</td></tr>';
     return;
   }
 
-  const data = await res.json();
-
-  document.getElementById('tabelUser').innerHTML = data.map(u => `
-    <tr>
-      <td>${u.username}</td>
-      <td><span class="badge ${u.role === 'user' ? 'tersedia' : u.role === 'admin' ? 'disewa' : 'maintenance'}">${u.role}</span></td>
-      <td>
-        <select onchange="ubahRole(${u.id}, this.value)" ${u.id === currentUser.id ? 'disabled' : ''}>
-          <option value="user" ${u.role === 'user' ? 'selected' : ''}>user</option>
-          <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>admin</option>
-          <option value="superadmin" ${u.role === 'superadmin' ? 'selected' : ''}>superadmin</option>
-        </select>
-      </td>
-      <td>
-        ${u.id === currentUser.id
-          ? '-'
-          : `<button class="btn-small btn-hapus" onclick="hapusUser(${u.id})">Hapus</button>`}
-      </td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = users.map((u, index) => {
+    const isSelf = currentUser && currentUser.username === u.username;
+    return `
+      <tr>
+        <td>${u.username}</td>
+        <td><span class="badge ${u.role === 'user' ? 'tersedia' : 'maintenance'}">${u.role}</span></td>
+        <td>
+          <select onchange="ubahRole('${u.username}', this.value)" ${isSelf ? 'disabled' : ''} style="padding: 4px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 4px;">
+            <option value="user" ${u.role === 'user' ? 'selected' : ''}>user</option>
+            <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>admin</option>
+            <option value="superadmin" ${u.role === 'superadmin' ? 'selected' : ''}>superadmin</option>
+          </select>
+        </td>
+        <td>
+          ${isSelf ? '-' : `<button class="btn-small btn-hapus" onclick="hapusUser('${u.username}')" style="background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Hapus</button>`}
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
-async function ubahRole(id, role) {
-  const res = await fetch(`${API_BASE_URL}/users/${id}/role`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ role })
+function ubahRole(username, roleBaru) {
+  let users = JSON.parse(localStorage.getItem('local_users') || '[]');
+  users = users.map(u => {
+    if (u.username === username) {
+      u.role = roleBaru;
+    }
+    return u;
   });
-  const data = await res.json();
-  if (!res.ok) {
-    alert(data.message || 'Gagal mengubah role.');
-  }
+  localStorage.setItem('local_users', JSON.stringify(users));
   muatUser();
 }
 
-async function hapusUser(id) {
-  if (!confirm('Yakin ingin menghapus akun ini?')) return;
-  await fetch(`${API_BASE_URL}/users/${id}`, {
-    method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
+function hapusUser(username) {
+  if (!confirm(`Yakin ingin menghapus akun ${username}?`)) return;
+  let users = JSON.parse(localStorage.getItem('local_users') || '[]');
+  users = users.filter(u => u.username !== username);
+  localStorage.setItem('local_users', JSON.stringify(users));
   muatUser();
 }
 
