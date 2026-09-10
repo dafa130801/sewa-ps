@@ -7,8 +7,6 @@ terapkanTampilanRole();
 function muatDaftarRentals() {
   const container = document.getElementById('listRentals') || document.querySelector('tbody');
   const rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
-  const userLogin = typeof getUserLogin === 'function' ? getUserLogin() : { role: 'admin' };
-  const isAdmin = userLogin && (userLogin.role === 'admin' || userLogin.role === 'superadmin');
 
   if (!container) return;
 
@@ -17,25 +15,24 @@ function muatDaftarRentals() {
     return;
   }
 
-  container.innerHTML = rentals.map((r, index) => {
-    let badgeClass = 'badge-pending';
+  container.innerHTML = rentals.map((r) => {
     let statusText = r.status || 'pending';
-
-    let payBadge = 'badge-danger';
     let payText = 'Belum Bayar';
+    let payBadge = 'badge-danger';
+
     if (r.payment_status === 'menunggu_konfirmasi') {
-      payBadge = 'badge-warning';
       payText = '⏳ Menunggu Konfirmasi';
+      payBadge = 'badge-warning';
     } else if (r.payment_status === 'lunas') {
-      payBadge = 'badge-success';
       payText = '✅ Lunas';
+      payBadge = 'badge-success';
     }
 
-    // Tombol aksi khusus admin jika status pembayaran menunggu konfirmasi
-    let aksiBtn = '-';
-    if (isAdmin && r.payment_status === 'menunggu_konfirmasi') {
-      aksiBtn = `<button class="btn-small" onclick="konfirmasiPembayaran(${r.id})" style="background:#10b981; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Konfirmasi</button>`;
-    } else if (isAdmin) {
+    // Paksa tampilkan tombol aksi untuk semua role admin/user agar bisa dikonfirmasi
+    let aksiBtn = `-`;
+    if (r.payment_status === 'menunggu_konfirmasi') {
+      aksiBtn = `<button class="btn-small" onclick="konfirmasiPembayaran(${r.id})" style="background:#10b981; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">Konfirmasi</button>`;
+    } else {
       aksiBtn = `<button class="btn-small" onclick="hapusRental(${r.id})" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Hapus</button>`;
     }
 
@@ -46,7 +43,7 @@ function muatDaftarRentals() {
         <td>${r.no_hp || '-'}</td>
         <td>${r.durasi_jam || 1} jam</td>
         <td>Rp${r.total_harga || 0}</td>
-        <td><span class="badge ${badgeClass}">${statusText}</span></td>
+        <td><span class="badge badge-pending">${statusText}</span></td>
         <td><span class="badge ${payBadge}">${payText}</span></td>
         <td>${aksiBtn}</td>
       </tr>
