@@ -46,6 +46,9 @@ function muatDaftarConsole() {
 function tampilkanJadwalUnit() {
   const jadwalDiv = document.getElementById('jadwalUnit');
   const consoleId = document.getElementById('consoleId').value;
+  const inputJamMulai = document.getElementById('jamMulai')?.value;
+  const inputDurasi = parseInt(document.getElementById('durasiJam')?.value) || 1;
+
   if (!jadwalDiv) return;
 
   const rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
@@ -57,19 +60,59 @@ function tampilkanJadwalUnit() {
     return;
   }
 
-  // Filter rental yang aktif atau belum lunas untuk unit ini
+  // Filter rental yang aktif untuk unit ini
   const activeRentals = rentals.filter(r => 
     r.nama_console === selectedConsole.nama && 
     r.payment_status !== 'lunas' && 
-    r.status !== 'batal'
+    r.status !== 'batal' &&
+    r.jam_mulai
   );
 
-  if (activeRentals.length > 0) {
-    let listJadwal = activeRentals.map(r => `• ${r.nama_penyewa} (${r.durasi_jam} jam)`).join('<br>');
-    jadwalDiv.innerHTML = `<span style="color:#ef4444; font-weight:bold;">⚠️ Unit sedang disewa/dibooking:</span><br>${listJadwal}`;
-  } else {
-    jadwalDiv.innerHTML = '✅ Unit tersedia untuk dibooking.';
+  if (activeRentals.length === 0) {
+    jadwalDiv.innerHTML = '✅ Unit tersedia pada jam tersebut.';
+    return;
   }
+
+  // Cek apakah ada bentrok waktu jika input jam mulai tersedia
+  if (inputJamMulai) {
+    const startInput = new Date(inputJamMulai).getTime();
+    const endInput = startInput + (inputDurasi * 3600 * 1000);
+
+    let bentrok = false;
+    let infoBentrok = '';
+
+    for (let r of activeRentals) {
+      const startExisting = new Date(r.jam_mulai).getTime();
+      const endExisting = startExisting + ((r.durasi_jam || 1) * 3600 * 1000);
+
+      // Rumus deteksi irisan waktu (overlap)
+      if (Math.max(startInput, startExisting) < Math.min(endInput, endExisting)) {
+        bentrok = true;
+        const formatMulai = new Date(r.jam_mulai).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
+        const formatSelesai = new Date(endExisting).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
+        
+        infoBentrok = `⚠️ Bilik ini dari ${formatMulai} - ${formatSelesai} sudah dibooking`;
+        break;
+      }
+    }
+
+    if (bentrok) {
+      jadwalDiv.innerHTML = `<span style="color:#ef4444; font-weight:bold;">${infoBentrok}</span>`;
+      return;
+    }
+  }
+
+  // Tampilkan daftar seluruh jadwal aktif unit ini sebagai referensi
+  let listJadwal = activeRentals.map(r => {
+    const startExisting = new Date(r.jam_mulai).getTime();
+    const endExisting = startExisting + ((r.durasi_jam || 1) * 3600 * 1000);
+    const formatMulai = new Date(r.jam_mulai).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
+    const formatSelesai = new Date(endExisting).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
+    
+    return `• Bilik ini dari ${formatMulai} - ${formatSelesai} sudah dibooking (${r.nama_penyewa})`;
+  }).join('<br>');
+
+  jadwalDiv.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">Jadwal terisi pada unit ini:</span><br>${listJadwal}`;
 }
 
 function setJamMulaiDefault() {
@@ -77,7 +120,13 @@ function setJamMulaiDefault() {
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   const jamMulaiEl = document.getElementById('jamMulai');
   if (jamMulaiEl) jamMulaiEl.value = now.toISOString().slice(0, 16);
+  tampilkanJadwalUnit();
 }
+
+// Event listener untuk deteksi perubahan waktu/durasi secara real-time
+document.getElementById('jamMulai')?.addEventListener('change', tampilkanJadwalUnit);
+document.getElementById('durasiJam')?.addEventListener('input', tampilkanJadwalUnit);
+
 setJamMulaiDefault();
 
 document.getElementById('formSewa').addEventListener('submit', (e) => {
@@ -86,6 +135,7 @@ document.getElementById('formSewa').addEventListener('submit', (e) => {
   if (errorMsg) errorMsg.textContent = '';
 
   const durasi = parseInt(document.getElementById('durasiJam').value) || 1;
+  const jamMulaiVal = document.getElementById('jamMulai').value;
   const consoles = getLocalConsoles();
   const consoleId = document.getElementById('consoleId').value;
   const selectedConsole = consoles.find(c => c.id == consoleId);
@@ -94,6 +144,24 @@ document.getElementById('formSewa').addEventListener('submit', (e) => {
   const tipeConsole = selectedConsole ? selectedConsole.tipe : 'PS3';
   const hargaPerJam = selectedConsole ? selectedConsole.harga_per_jam : 5000;
   const totalHarga = durasi * hargaPerJam;
+
+  // Validasi ketat pencegahan bentrok saat tombol submit ditekan
+  const rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
+  const startInput = new Date(jamMulaiVal).getTime();
+  const endInput = startInput + (durasi * 3600 * 1000);
+
+  for (let r of rentals) {
+    if (r.nama_console === namaConsole && r.payment_status !== 'lunas' && r.status !== 'batal' && r.jam_mulai) {
+      const startExisting = new Date(r.jam_mulai).getTime();
+      const endExisting = startExisting + ((r.durasi_jam || 1) * 3600 * 1000);
+      if (Math.max(startInput, startExisting) < Math.min(endInput, endExisting)) {
+        const formatMulai = new Date(r.jam_mulai).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
+        const formatSelesai = new Date(endExisting).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '-');
+        alert(`Gagal! Bilik ini dari ${formatMulai} - ${formatSelesai} sudah dibooking.`);
+        return;
+      }
+    }
+  }
 
   const userLogin = typeof getUserLogin === 'function' ? getUserLogin() : null;
   const namaPenyewa = document.getElementById('namaPenyewa').value || (userLogin ? userLogin.username : 'Admin');
@@ -105,6 +173,7 @@ document.getElementById('formSewa').addEventListener('submit', (e) => {
     tipe: tipeConsole,
     nama_penyewa: namaPenyewa,
     no_hp: noHp,
+    jam_mulai: jamMulaiVal,
     durasi_jam: durasi,
     total_harga: totalHarga,
     status: 'pending',
