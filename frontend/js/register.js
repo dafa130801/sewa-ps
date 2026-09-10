@@ -1,32 +1,45 @@
 // =========================================
-// LOGIC HALAMAN REGISTRASI
+// LOGIC HALAMAN REGISTRASI (Local Storage Mode)
 // Akun baru selalu dibuat dengan role "user"
 // =========================================
-document.getElementById('formRegister').addEventListener('submit', async (e) => {
+document.getElementById('formRegister').addEventListener('submit', (e) => {
   e.preventDefault();
-  const username = document.getElementById('username').value;
+  const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
   const errorMsg = document.getElementById('errorMsg');
   const successMsg = document.getElementById('successMsg');
-  errorMsg.textContent = '';
-  successMsg.textContent = '';
+  
+  if (errorMsg) errorMsg.textContent = '';
+  if (successMsg) successMsg.textContent = '';
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      errorMsg.textContent = data.message || 'Gagal mendaftar.';
-      return;
-    }
-
-    successMsg.textContent = 'Akun berhasil dibuat! Mengalihkan ke halaman login...';
-    setTimeout(() => window.location.href = 'login.html', 1500);
-  } catch (err) {
-    errorMsg.textContent = 'Tidak dapat terhubung ke server backend.';
+  if (!username || !password) {
+    if (errorMsg) errorMsg.textContent = 'Username dan password wajib diisi.';
+    return;
   }
+
+  // Ambil daftar user yang sudah ada di localStorage
+  const users = JSON.parse(localStorage.getItem('local_users') || '[]');
+
+  // Cek apakah username sudah digunakan
+  const userExist = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  if (userExist) {
+    if (errorMsg) errorMsg.textContent = 'Username sudah terdaftar. Gunakan username lain.';
+    return;
+  }
+
+  // Buat data user baru (default role: user)
+  const newUser = {
+    id: Date.now(),
+    username: username,
+    password: password,
+    role: 'user'
+  };
+
+  users.push(newUser);
+  localStorage.setItem('local_users', JSON.stringify(users));
+
+  if (successMsg) successMsg.textContent = 'Akun berhasil dibuat! Mengalihkan ke halaman login...';
+  setTimeout(() => {
+    window.location.href = 'login.html';
+  }, 1500);
 });
