@@ -1,5 +1,5 @@
 // =========================================
-// LOGIC HALAMAN KELOLA UNIT KONSOL (admin & superadmin)
+// LOGIC HALAMAN KELOLA UNIT KONSOL (Local Storage Mode)
 // =========================================
 const token = wajibLogin();
 terapkanTampilanRole();
@@ -10,11 +10,29 @@ if (user && user.role === 'user') {
   window.location.href = 'dashboard.html';
 }
 
-async function muatTabel() {
-  const res = await fetch(`${API_BASE_URL}/consoles`);
-  const data = await res.json();
+// Ambil data unit dari localStorage atau gunakan data awal jika kosong
+function getLocalConsoles() {
+  const data = localStorage.getItem('local_consoles');
+  if (!data) {
+    const defaultData = [
+      { id: 1, nama: 'Bilik 1', tipe: 'PS3', harga_per_jam: 5000, status: 'tersedia' }
+    ];
+    localStorage.setItem('local_consoles', JSON.stringify(defaultData));
+    return defaultData;
+  }
+  return JSON.parse(data);
+}
 
-  document.getElementById('tabelConsole').innerHTML = data.map(c => `
+function saveLocalConsoles(consoles) {
+  localStorage.setItem('local_consoles', JSON.stringify(consoles));
+}
+
+function muatTabel() {
+  const data = getLocalConsoles();
+  const tabelElement = document.getElementById('tabelConsole');
+  if (!tabelElement) return;
+
+  tabelElement.innerHTML = data.map(c => `
     <tr>
       <td>${c.nama}</td>
       <td>${c.tipe}</td>
@@ -25,46 +43,38 @@ async function muatTabel() {
   `).join('');
 }
 
-document.getElementById('formConsole').addEventListener('submit', async (e) => {
+document.getElementById('formConsole').addEventListener('submit', (e) => {
   e.preventDefault();
   const errorMsg = document.getElementById('errorMsg');
   errorMsg.textContent = '';
 
-  const body = {
-    nama: document.getElementById('nama').value,
-    tipe: document.getElementById('tipe').value,
-    harga_per_jam: parseInt(document.getElementById('harga').value)
+  const nama = document.getElementById('nama').value;
+  const tipe = document.getElementById('tipe').value;
+  const harga_per_jam = parseInt(document.getElementById('harga').value);
+
+  const consoles = getLocalConsoles();
+  
+  // Buat unit baru dengan ID unik berdasarkan waktu
+  const newUnit = {
+    id: Date.now(),
+    nama: nama,
+    tipe: tipe,
+    harga_per_jam: harga_per_jam,
+    status: 'tersedia'
   };
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/consoles`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
+  consoles.push(newUnit);
+  saveLocalConsoles(consoles);
 
-    if (!res.ok) {
-      errorMsg.textContent = data.message || 'Gagal menambahkan unit.';
-      return;
-    }
-
-    document.getElementById('formConsole').reset();
-    muatTabel();
-  } catch (err) {
-    errorMsg.textContent = 'Tidak dapat terhubung ke server backend.';
-  }
+  document.getElementById('formConsole').reset();
+  muatTabel();
 });
 
-async function hapusUnit(id) {
+function hapusUnit(id) {
   if (!confirm('Yakin ingin menghapus unit ini?')) return;
-  await fetch(`${API_BASE_URL}/consoles/${id}`, {
-    method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
+  let consoles = getLocalConsoles();
+  consoles = consoles.filter(c => c.id !== id);
+  saveLocalConsoles(consoles);
   muatTabel();
 }
 
