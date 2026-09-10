@@ -4,7 +4,7 @@
 const token = wajibLogin();
 terapkanTampilanRole();
 
-let rentalIdAktif = null; // <-- TAMBAHKAN BARIS INI DI SINI
+let rentalIdAktif = null;
 
 function getLocalConsoles() {
   const data = localStorage.getItem('local_consoles');
@@ -104,6 +104,19 @@ document.getElementById('formSewa').addEventListener('submit', (e) => {
   tampilkanModalQris(newRental.id, totalHarga);
 });
 
+function tampilkanModalQris(rentalId, totalHarga) {
+  rentalIdAktif = rentalId;
+  const qrisTotal = document.getElementById('qrisTotal');
+  const qrisStatus = document.getElementById('qrisStatus');
+  const modalQris = document.getElementById('modalQris');
+
+  if (qrisTotal) qrisTotal.textContent = `Total: Rp${totalHarga}`;
+  if (qrisStatus) qrisStatus.textContent = 'Silakan scan & transfer sesuai total di atas.';
+  if (modalQris) {
+    modalQris.style.display = 'flex';
+  }
+}
+
 function tandaiSudahBayar() {
   if (!rentalIdAktif) return;
   
@@ -116,11 +129,13 @@ function tandaiSudahBayar() {
   });
   localStorage.setItem('local_rentals', JSON.stringify(rentals));
 
-  document.getElementById('qrisStatus').textContent = '⏳ Menunggu konfirmasi admin...';
+  const qrisStatus = document.getElementById('qrisStatus');
+  if (qrisStatus) qrisStatus.textContent = '⏳ Menunggu konfirmasi admin...';
 }
 
 function tutupModalQris() {
-  document.getElementById('modalQris').style.display = 'none';
+  const modalQris = document.getElementById('modalQris');
+  if (modalQris) modalQris.style.display = 'none';
   rentalIdAktif = null;
 }
 
