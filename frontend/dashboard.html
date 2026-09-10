@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - Sewa PS</title>
-  <!-- Masukkan link CSS kamu di sini jika ada -->
   <style>
     body { font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
     nav { display: flex; gap: 15px; margin-bottom: 25px; background: #1e293b; padding: 12px 20px; border-radius: 8px; align-items: center; }
@@ -18,14 +17,12 @@
     .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
     .badge.tersedia { background: #10b981; color: white; }
     .badge.maintenance { background: #ef4444; color: white; }
-    /* Styling Modal QRIS */
-    #modalQris { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+    #modalQris { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 999; }
     .modal-content { background: #1e293b; padding: 30px; border-radius: 8px; text-align: center; width: 90%; max-width: 400px; }
   </style>
 </head>
 <body>
 
-  <!-- NAVBAR DENGAN KELAS ADMIN-ONLY -->
   <nav>
     <a href="dashboard.html">Dashboard</a>
     <a href="riwayat.html">Riwayat Sewa</a>
@@ -41,7 +38,6 @@
       <label for="consoleId">Pilih Unit Konsol (yang tersedia)</label>
       <select id="consoleId" required></select>
       
-      <!-- Tempat Peringatan Bentrok / Info Jadwal -->
       <div id="jadwalUnit" style="margin-bottom: 15px; font-size: 14px;"></div>
 
       <label for="namaPenyewa">Nama Penyewa (kosongkan untuk pakai username Anda)</label>
@@ -66,7 +62,6 @@
     <div id="listConsole"></div>
   </div>
 
-  <!-- Modal QRIS Pembayaran -->
   <div id="modalQris">
     <div class="modal-content">
       <h3>Selesaikan Pembayaran</h3>
@@ -78,7 +73,6 @@
     </div>
   </div>
 
-  <!-- Script Pendukung -->
   <script src="js/auth.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
