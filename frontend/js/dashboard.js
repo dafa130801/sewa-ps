@@ -60,10 +60,9 @@ function tampilkanJadwalUnit() {
     return;
   }
 
-  // Filter rental yang aktif untuk unit ini
+  // Filter SEMUA rental yang valid dan tidak batal untuk unit ini (termasuk yang sudah lunas)
   const activeRentals = rentals.filter(r => 
     r.nama_console === selectedConsole.nama && 
-    r.payment_status !== 'lunas' && 
     r.status !== 'batal' &&
     r.jam_mulai
   );
@@ -145,13 +144,13 @@ document.getElementById('formSewa').addEventListener('submit', (e) => {
   const hargaPerJam = selectedConsole ? selectedConsole.harga_per_jam : 5000;
   const totalHarga = durasi * hargaPerJam;
 
-  // Validasi ketat pencegahan bentrok saat tombol submit ditekan
+  // Validasi ketat pencegahan bentrok saat tombol submit ditekan (termasuk yang sudah lunas)
   const rentals = JSON.parse(localStorage.getItem('local_rentals') || '[]');
   const startInput = new Date(jamMulaiVal).getTime();
   const endInput = startInput + (durasi * 3600 * 1000);
 
   for (let r of rentals) {
-    if (r.nama_console === namaConsole && r.payment_status !== 'lunas' && r.status !== 'batal' && r.jam_mulai) {
+    if (r.nama_console === namaConsole && r.status !== 'batal' && r.jam_mulai) {
       const startExisting = new Date(r.jam_mulai).getTime();
       const endExisting = startExisting + ((r.durasi_jam || 1) * 3600 * 1000);
       if (Math.max(startInput, startExisting) < Math.min(endInput, endExisting)) {
